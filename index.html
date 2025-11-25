@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NCT WISH 스타 플레이어</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 引入像素字体 */
+        @font-face {
+            font-family: 'PixelEmulator';
+            src: url('https://fonts.gstatic.com/s/pressstart2p/v15/R70mJzJ2w-d9yIeF_V9Jg7V2BfSgI3Q.woff2') format('woff2');
+            font-weight: 400;
+            font-style: normal;
+        }
+
+        /* 核心样式和像素化效果 - 调整为更可爱的粉色/薄荷绿/黄色调 */
+        :root {
+            --color-soft-green: #C5E1A5; /* 柔和的绿色 */
+            --color-blue-dark: #4DB6AC; /* 薄荷绿 */
+            --color-green-screen: #E0F7FA; /* 浅水色屏幕 */
+            --color-green-dark: #00897B;
+            --color-y2k-pink: #F48FB1; /* 可爱亮粉 */
+            --color-button: #FFAB91; /* 珊瑚橙 */
+            --pixel-border: 6px solid #000000;
+            --star-yellow: #FFEE58; /* 闪亮星星黄 */
+            --game-wall: #81D4FA; /* 浅蓝色墙壁 */
+            --letter-paper: #FFFDE7; /* 信纸颜色 */
+            --envelope-color: #FFCDD2; /* 信封颜色 */
+        }
+
+        body {
+            font-family: 'PixelEmulator', monospace;
+            background-color: #F8BBD0; /* 可爱粉色背景 */
+            color: #000000;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        /* 主应用容器 - 限制最大宽度, 模拟手机屏幕 */
+        .app-container {
+            width: 100%;
+            max-width: 420px; 
+            background-color: #FCE4EC; /* 极浅粉色 */
+            padding: 20px 10px;
+            box-shadow: 0 0 30px rgba(255, 64, 129, 0.5); /* 亮粉色阴影 */
+            display: flex;
+            flex-direction: column;
+            gap: 20px; 
+        }
+        
+        /* 顶部介绍区域 - 增加圆角和阴影的可爱感 */
+        .intro-section {
+            padding: 15px;
+            border: 4px solid #000;
+            background-color: #ffffff; 
+            box-shadow: 6px 6px 0px var(--color-y2k-pink); 
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .intro-title {
+            font-size: 16px; 
+            margin-bottom: 10px; 
+            color: var(--color-y2k-pink);
+            text-shadow: 2px 2px 0 var(--color-soft-green);
+        }
+        
+        .intro-text {
+            font-size: 10px; 
+            line-height: 1.5; 
+            color: #333;
+        }
+
+        /* 成员介绍区样式 */
+        .member-button {
+            background-color: var(--color-soft-green); /* 柔和绿色按钮 */
+            box-shadow: 4px 4px 0px var(--color-blue-dark);
+        }
+        .member-button:active {
+            background-color: #A3D18E;
+        }
+
+        /* 成员简介显示框 */
+        #profileDisplay {
+            border: 4px solid var(--color-blue-dark); 
+            box-shadow: 6px 6px 0px var(--color-blue-dark);
+            background-color: #E0F7FA; /* 浅水色背景 */
+        }
+        .profile-title {
+            color: var(--color-y2k-pink);
+        }
+
+        /* MV 播放器容器 */
+        .external-mv-player {
+            background-color: #FFECB3; /* 奶油黄 */
+            box-shadow: 6px 6px 0px var(--color-y2k-pink); 
+        }
+
+        /* MP3 播放器容器 */
+        .mp3-player {
+            background-color: var(--color-soft-green);
+            border: var(--pixel-border);
+            border-radius: 12px;
+            box-shadow: 8px 8px 0px 0px #000000, 
+                        -4px -4px 0px 0px #ffffff,
+                        inset 4px 4px 0px var(--color-green-dark),
+                        inset -4px -4px 0px #ffffff;
+            padding: 16px;
+            position: relative;
+        }
+        
+        /* 屏幕区域 */
+        .screen {
+            background-color: var(--color-green-screen);
+            border: 4px solid #000000;
+            box-shadow: inset 3px 3px 0px var(--color-blue-dark), inset -3px -3px 0px #ffffff;
+        }
+        
+        .playback-animation {
+            color: var(--color-y2k-pink);
+        }
+        .rotating-cd {
+            font-size: 80px;
+            text-shadow: 4px 4px 0px #000000;
+        }
+        .playing-info {
+            font-size: 9px;
+            color: var(--color-green-dark);
+            padding: 5px 10px;
+            border: 2px dashed var(--color-green-dark);
+        }
+        
+        /* 像素风按钮 */
+        .pixel-button {
+            background-color: var(--color-button); 
+            box-shadow: 4px 4px 0px #000000;
+        }
+        
+        /* --- 스타 게임 섹션 --- */
+        .pacman-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #333333; /* 街机背景 */
+            border: 6px solid var(--star-yellow);
+            border-radius: 12px;
+            box-shadow: 8px 8px 0px var(--color-y2k-pink);
+            text-align: center;
+        }
+        .pacman-section h2 {
+            color: var(--star-yellow); /* 亮黄色文本 */
+            font-size: 14px;
+            margin-bottom: 15px;
+            text-shadow: 1px 1px 0 #000000;
+        }
+        #pacmanCanvas {
+            border: 4px solid var(--color-y2k-pink);
+            background-color: #000000;
+            box-shadow: 4px 4px 0px var(--color-y2k-pink);
+        }
+        .game-info {
+            color: #FFFFFF; /* 白色信息文本 */
+            background-color: #666;
+        }
+
+        /* --- 팬레터 섹션 --- */
+        .fanletter-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--envelope-color); /* 信封颜色 */
+            border: 6px solid #FF80AB; /* 深粉色边框 */
+            border-radius: 12px;
+            box-shadow: 8px 8px 0px #FF4081; /* 爱心粉色阴影 */
+            text-align: center;
+            cursor: pointer; /* 提示可点击 */
+            position: relative;
+            overflow: hidden; /* 防止内容溢出 */
+            transition: all 0.3s ease-out;
+        }
+        .fanletter-section h2 {
+            color: #FFFFFF; /* 白色标题 */
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 0 #000000;
+            position: relative;
+            z-index: 2; /* 确保在信封上层 */
+        }
+        .envelope-icon {
+            font-size: 48px;
+            color: #E91E63; /* 心形红色 */
+            text-shadow: 2px 2px 0 #ffffff;
+            margin-bottom: 10px;
+            position: relative;
+            z-index: 2;
+        }
+        .fanletter-content {
+            background-color: var(--letter-paper); /* 信纸颜色 */
+            border: 2px dashed #FF80AB; /* 虚线边框 */
+            padding: 20px;
+            margin-top: 15px;
+            border-radius: 8px;
+            font-size: 10px; /* 信纸文字大小 */
+            line-height: 1.8;
+            text-align: left;
+            white-space: pre-wrap; /* 保持换行和空格 */
+            color: #333;
+            max-height: 0; /* 初始隐藏 */
+            opacity: 0;
+            overflow: hidden;
+            transition: max-height 0.8s ease-out, opacity 0.6s ease-out;
+        }
+        .fanletter-section.open .fanletter-content {
+            max-height: 1000px; /* 展开后的最大高度 (修复被遮挡问题，增加高度) */
+            opacity: 1;
+        }
+        .fanletter-section.open .envelope-icon {
+            color: #FF5252; /* 打开时心形变色 */
+        }
+        /* Y2K 装饰 */
+        .y2k-deco {
+            position: absolute;
+            font-size: 28px;
+            text-shadow: 2px 2px 0 #000000;
+            z-index: 10;
+            pointer-events: none;
+            opacity: 0.8;
+            line-height: 1;
+        }
+        .star { top: 8px; left: 10px; color: #FFEB3B; transform: rotate(10deg); } /* 黄色星星 */
+        .wing { bottom: 8px; right: 10px; font-size: 34px; color: var(--color-y2k-pink); } /* 粉色翅膀 */
+        .palm { top: 30px; right: 15px; font-size: 24px; color: var(--color-green-dark); } /* 绿色椰树 */
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 상단 소개 영역 --><div class="intro-section">
+            <h1 class="intro-title">NCT WISH: WISH for Our WISH</h1>
+            <p class="intro-text">
+                ✨ 네오 컬처 테크놀로지, 엔시티 위시! 저희의 음악으로 당신의 소원이 현실이 되기를 바라요. 
+                청량하고 희망찬 NCT WISH의 Y2K 감성을 지금 바로 아래 MP3 플레이어에서 만나보세요! 
+                💫 🚀
+            </p>
+        </div>
+
+        <!-- 멤버 프로필 영역 --><div class="member-section">
+            <h2 class="intro-title text-xl mb-4 text-center">멤버 프로필 (MEMBER PROFILE)</h2>
+            
+            <div class="member-grid">
+                <button class="member-button" data-member="sion">SION<br>(시온)</button>
+                <button class="member-button" data-member="riku">RIKU<br>(리쿠)</button>
+                <button class="member-button" data-member="yushi">YUSHI<br>(유우시)</button>
+                <button class="member-button" data-member="jaehee">JAEHEE<br>(재희)</button>
+                <button class="member-button" data-member="ryo">RYO<br>(료)</button>
+                <button class="member-button" data-member="sakuya">SAKUYA<br>(사쿠야)</button>
+            </div>
+
+            <div class="intro-section" id="profileDisplay">
+                <p class="profile-info text-center">멤버 버튼을 눌러 소개를 확인하세요 ✨</p>
+            </div>
+        </div>
+        
+        <!-- MV 플레이어 (외부) --><div class="external-mv-player">
+            <h2 class="intro-title text-lg mb-3 text-center" style="color: var(--color-green-dark);">
+                🎵 'COLOR' MV 전용 플레이어 🎵
+            </h2>
+            <video controls id="externalMvPlayer" poster="https://placehold.co/640x360/0288D1/ffffff?text=NCT+WISH+COLOR+MV">
+                <source src="https://raw.githubusercontent.com/swinnie259-art/demo/main/NCT%20WISH%20%E1%84%8B%E1%85%A6%E1%86%AB%E1%84%89%E1%85%B5%E1%84%90%E1%85%B5%20%E1%84%8B%E1%85%B1%E1%84%89%E1%85%B5%20'COLOR'%20MV%20-%20SMTOWN%20(360p%2C%20h264).mp4" type="video/mp4">
+                사용하시는 브라우저는 HTML5 비디오 재생을 지원하지 않습니다.
+            </video>
+        </div>
+        
+        <!-- MP3 플레이어 본체 --><div class="mp3-player">
+            <!-- Y2K 장식 --><div class="y2k-deco star" style="position: static; margin-bottom: 5px; font-size: 24px;">★ 💿 💖</div> 
+            
+            <!-- 화면 영역 --><div class="screen">
+                
+                <!-- 노래 목록 영역 (기본 표시) --><div class="input-area" id="inputArea">
+                    <div class="input-wrapper">
+                        <input type="text" id="song1" class="song-input" placeholder="nctwish의 color 입력" value="nctwish의 color" data-url="https://raw.githubusercontent.com/swinnie259-art/demo/main/NCT-WISH---COLOR-Bazeafrika.com.mp3">
+                        <span class="cursor"></span>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="text" id="song2" class="song-input" placeholder="nctwish의 surf 입력" value="nctwish의 surf" data-url="https://raw.githubusercontent.com/swinnie259-art/demo/main/NCT-WISH---Surf-Bazeafrika.com.mp3">
+                        <span class="cursor"></span>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="text" id="song3" class="song-input" placeholder="nctwish의 wichu 입력" value="nctwish의 wichu" data-url="https://raw.githubusercontent.com/swinnie259-art/demo/main/NCT-WISH---WICHU-Bazeafrika.com.mp3">
+                        <span class="cursor"></span>
+                    </div>
+                </div>
+                
+                <!-- 재생 애니메이션 --><div class="playback-animation" id="playbackAnimation">
+                    <span class="rotating-cd">🎧</span>
+                    <div class="playing-info" id="playingInfo"></div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button class="pixel-button" id="backButton">노래 목록으로 돌아가기</button> 
+                <button class="pixel-button" id="playButton">▶ 재생</button>
+                <button class="pixel-button" id="nextButton">▶▶ 다음 곡</button>
+            </div>
+            
+            <!-- 오디오 플레이어 (숨김) --><audio id="audioPlayer"></audio>
+        </div>
+
+        <!-- 스타 게임 섹션 --><div class="pacman-section">
+            <h2>🌟 픽셀 스타일의 스타 게임 🌟</h2>
+            <div class="game-container">
+                <canvas id="pacmanCanvas"></canvas>
+                <div class="game-info">
+                    <p id="scoreDisplay">SCORE: 0</p>
+                    <p id="statusDisplay">방향키 또는 화면 스와이프를 사용하여 시작!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 팬레터 섹션 --><div class="fanletter-section" id="fanletterSection">
+            <h2>💌 팬레터 (FAN LETTER) 💌</h2>
+            <div class="envelope-icon">💖</div>
+            <div class="fanletter-content" id="fanletterContent">
+오빠! 안녕하세요.
+저는 가음이에요.
+
+우리 처음 만난 지 정말 오래된 것 같죠?
+재희 오빠가 우리 앞에 나타나줘서,
+그 사람이 되어줘서 항상 정말 고마워요.
+
+무대 위에서 반짝이는 모습도,
+무대 아래에서 조용히 미소 짓는 모습도,
+오빠만 보면 힘들던 하루도 다시 괜찮아지는 것 같아요.
+오빠는 저에게 정말 큰 힘이에요.
+그래서 오늘은 그냥, 고맙다는 말을 꼭 하고 싶었어요.
+
+오빠도 가끔은 많이 힘들지 않을까…
+저는 자주 그렇게 생각해요.
+오빠가 너무 부담 갖지 않았으면 좋겠고,
+너무 힘들지 않았으면 좋겠고,
+좋은 일과 좋은 말만 듣고 보면서 지냈으면 좋겠어요.
+상처 되는 말들은 신경 쓰지 않았으면 해요.
+
+오빠는 정말 가장 소중한 사람이고,
+제가 참 많이 아끼는 사람이에요.
+앞으로도 계속 응원할게요.
+오빠는 언제나 행복했으면 좋겠어요.
+
+그리고… 좋아해, 정말 많이.
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- 음악 플레이어 로직 ---
+            const playButton = document.getElementById('playButton');
+            const nextButton = document.getElementById('nextButton');
+            const backButton = document.getElementById('backButton'); 
+            const audioPlayer = document.getElementById('audioPlayer');
+            const inputArea = document.getElementById('inputArea');
+            const playbackAnimation = document.getElementById('playbackAnimation');
+            const playingInfo = document.getElementById('playingInfo');
+            const songInputs = [
+                document.getElementById('song1'),
+                document.getElementById('song2'),
+                document.getElementById('song3')
+            ];
+            const externalMvPlayer = document.getElementById('externalMvPlayer');
+
+            // --- 멤버 데이터 및 표시 로직 ---
+            const members = {
+                sion: {
+                    korean: "시온 (SION)",
+                    birthday: "2002.05.11",
+                    info: "NCT WISH의 맏형이자 리더. 팀을 든든하게 이끌어가는 맏형.", 
+                    emoji: "🌷"
+                },
+                riku: {
+                    korean: "리쿠 (RIKU)",
+                    birthday: "2003.06.28",
+                    info: "넘치는 에너지와 밝은 미소가 트레이드마크! 무대 위에서 늘 빛나요.",
+                    emoji: "🐿️"
+                },
+                yushi: {
+                    korean: "유우시 (YUSHI)",
+                    birthday: "2004.04.05",
+                    info: "시크한 눈빛과 부드러운 카리스마. 매 순간 섬세한 퍼포먼스!",
+                    emoji: "⭐"
+                },
+                jaehee: {
+                    korean: "재희 (JAEHEE)",
+                    birthday: "2005.06.21",
+                    info: "팀의 분위기 메이커. 밝은 매력으로 팬들에게 기쁨을 줘요.",
+                    emoji: "🌳"
+                },
+                ryo: {
+                    korean: "료 (RYO)",
+                    birthday: "2007.08.04",
+                    info: "귀여운 비주얼과 반전 퍼포먼스 실력! 무한한 성장 가능성!",
+                    emoji: "🦦"
+                },
+                sakuya: {
+                    korean: "사쿠야 (SAKUYA)",
+                    birthday: "2007.11.18",
+                    info: "사랑스러운 팀의 막내. 개성과 매력으로 형들의 사랑을 독차지.",
+                    emoji: "🍞"
+                }
+            };
+
+            const memberButtons = document.querySelectorAll('.member-button');
+            const profileDisplay = document.getElementById('profileDisplay');
+
+            function displayProfile(memberKey) {
+                const member = members[memberKey];
+                if (!member) return;
+
+                profileDisplay.style.display = 'block';
+                
+                // 멤버 정보 표시 템플릿 (한국어로 변경)
+                profileDisplay.innerHTML = `
+                    <p class="profile-title">⭐ ${member.korean}</p>
+                    <p class="profile-info mb-2">🎂 생일 (Birthday): ${member.birthday}</p>
+                    
+                    <div style="margin-top: 15px; border-top: 2px dashed ${getComputedStyle(document.documentElement).getPropertyValue('--color-y2k-pink')}; padding-top: 15px; margin-bottom: 15px;">
+                        <p class="profile-title text-center text-sm" style="font-size: 10px; color: var(--color-green-dark);">✨ 대표 이모지 (REPRESENTATIVE EMOJI) ✨</p>
+                        <div class="profile-info text-center" style="color: var(--color-blue-dark); padding: 10px 0; border: 3px solid var(--color-blue-dark); background-color: #ffffff; line-height: 1.2; box-shadow: 4px 4px 0 var(--color-y2k-pink);">
+                            <span style="font-size: 64px; line-height: 1;">${member.emoji}</span> 
+                        </div>
+                        <p class="profile-info text-center mt-2" style="font-size: 7px; color: var(--color-green-dark);">
+                            (${member.korean.split('(')[0].trim()}의 전용 심볼)
+                        </p>
+                    </div>
+                    
+                    <p class="profile-info mt-3">✨ 소개 (Intro): ${member.info} ✨</p>
+                `;
+            }
+
+            memberButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const memberKey = this.dataset.member;
+                    displayProfile(memberKey);
+                });
+            });
+
+            // --- MP3 재생 로직 ---
+            let currentSongIndex = 0;
+            let isPlaying = false; 
+            
+            function getUpdatedSongList() {
+                return songInputs.map(input => ({
+                    name: input.value,
+                    url: input.dataset.url 
+                }));
+            }
+            
+            function showInputArea() {
+                inputArea.style.display = 'block';
+                playbackAnimation.style.display = 'none';
+            }
+            
+            function showPlaybackAnimation() {
+                 inputArea.style.display = 'none';
+                 playbackAnimation.style.display = 'flex';
+            }
+            
+            function playSong(startFromCurrent = false) {
+                showPlaybackAnimation(); 
+                externalMvPlayer.pause();
+                
+                const list = getUpdatedSongList();
+                if (list.length === 0) {
+                    playingInfo.textContent = '오류: 노래 목록이 비어 있습니다.';
+                    return;
+                }
+
+                if (!startFromCurrent) {
+                    if (currentSongIndex >= list.length) {
+                        currentSongIndex = 0;
+                    } else if (currentSongIndex < 0) {
+                        currentSongIndex = list.length - 1;
+                    }
+                }
+
+                const song = list[currentSongIndex];
+                
+                audioPlayer.src = song.url;
+                audioPlayer.load(); 
+                
+                audioPlayer.play()
+                    .then(() => {
+                        isPlaying = true;
+                        playButton.textContent = '⏸ 일시 정지';
+                        playingInfo.textContent = `재생 중: ${song.name.toUpperCase()}`;
+                    })
+                    .catch(error => {
+                        console.error("오디오 재생 실패:", error);
+                        playingInfo.textContent = `로드 실패: ${song.name.toUpperCase()}`;
+                        
+                        if (isPlaying || !startFromCurrent) {
+                            currentSongIndex++;
+                            setTimeout(playSong, 1000); 
+                        } else {
+                            playButton.textContent = '▶ 재생';
+                            isPlaying = false;
+                            showInputArea(); 
+                        }
+                    });
+            }
+            
+            function returnToHomeScreen() {
+                audioPlayer.pause();
+                externalMvPlayer.pause(); 
+                
+                audioPlayer.currentTime = 0; 
+                isPlaying = false;
+                
+                playButton.textContent = '▶ 재생';
+                currentSongIndex = 0; 
+                
+                showInputArea();
+                playingInfo.textContent = '다시 오신 것을 환영해요!';
+            }
+
+            playButton.addEventListener('click', () => {
+                externalMvPlayer.pause();
+                if (!isPlaying) {
+                    if (audioPlayer.paused && audioPlayer.src && audioPlayer.currentTime > 0) {
+                        audioPlayer.play()
+                            .then(() => {
+                                isPlaying = true;
+                                playButton.textContent = '⏸ 일시 정지';
+                                showPlaybackAnimation();
+                            })
+                            .catch(error => { console.error("재생 재개 실패:", error); playSong(true); });
+                    } else {
+                        currentSongIndex = 0;
+                        playSong();
+                    }
+                } else {
+                    audioPlayer.pause();
+                    playButton.textContent = '▶ 재생';
+                    isPlaying = false;
+                }
+            });
+
+            nextButton.addEventListener('click', () => {
+                externalMvPlayer.pause();
+                currentSongIndex++; 
+                audioPlayer.pause(); 
+                playSong(); 
+            });
+
+            backButton.addEventListener('click', returnToHomeScreen);
+            
+            audioPlayer.addEventListener('ended', () => {
+                currentSongIndex++;
+                playSong();
+            });
+
+            songInputs.forEach(input => {
+                input.addEventListener('focus', function() {
+                    document.querySelectorAll('.cursor').forEach(c => c.style.display = 'none');
+                    const cursor = this.nextElementSibling;
+                    if (cursor && cursor.classList.contains('cursor')) {
+                        cursor.style.display = 'block';
+                    }
+                });
+                input.addEventListener('blur', function() {
+                    const cursor = this.nextElementSibling;
+                    if (cursor && cursor.classList.contains('cursor')) {
+                        cursor.style.display = 'none';
+                    }
+                });
+            });
+            
+            returnToHomeScreen();
+
+            // --- 스타 게임 로직 (날개 달린 별) ---
+            const canvas = document.getElementById('pacmanCanvas');
+            const ctx = canvas.getContext('2d');
+            const scoreDisplay = document.getElementById('scoreDisplay');
+            const statusDisplay = document.getElementById('statusDisplay');
+
+            // --- Star Game Constants ---
+            const TILE_SIZE = 20;
+            const MAZE_WIDTH = 15;
+            const MAZE_HEIGHT = 15;
+            let SCALE_FACTOR = 1; 
+
+            // 0=벽, 1=콩(도트), 2=빈 공간, 3=플레이어 시작점
+            let initialMaze = [
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+                [0,1,1,1,1,1,1,2,1,1,1,1,1,1,0],
+                [0,1,0,0,1,0,0,1,0,0,1,0,0,1,0],
+                [0,1,0,1,1,1,1,1,1,1,1,1,0,1,0],
+                [0,1,0,1,0,0,1,0,1,0,0,1,0,1,0],
+                [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                [0,1,0,0,1,0,0,1,0,0,1,0,0,1,0],
+                [0,1,1,1,1,1,1,3,1,1,1,1,1,1,0], // 3 is starting position
+                [0,1,0,0,1,0,0,1,0,0,1,0,0,1,0],
+                [0,1,1,1,1,1,1,1,1,1,1,1,1,1,0],
+                [0,1,0,1,0,0,1,0,1,0,0,1,0,1,0],
+                [0,1,0,1,1,1,1,1,1,1,1,1,0,1,0],
+                [0,1,0,0,1,0,0,1,0,0,1,0,0,1,0],
+                [0,1,1,1,1,1,1,2,1,1,1,1,1,1,0],
+                [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+            ];
+            
+            let maze = JSON.parse(JSON.stringify(initialMaze));
+            
+            // 게임 상태
+            let score = 0;
+            let player = { x: 7, y: 7, dir: 'RIGHT', nextDir: 'RIGHT', animationPhase: 0 };
+            let lastMoveTime = 0;
+            const MOVE_INTERVAL = 150; 
+            
+            // 터치 제어 변수
+            let touchStartX = 0;
+            let touchStartY = 0;
+            const SWIPE_THRESHOLD = 20;
+
+            function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius, rotation = 0) {
+                let rot = Math.PI / 2 * 3 + rotation;
+                let x = cx;
+                let y = cy;
+                let step = Math.PI / spikes;
+
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - outerRadius);
+                for (let i = 0; i < spikes; i++) {
+                    x = cx + Math.cos(rot) * outerRadius;
+                    y = cy + Math.sin(rot) * outerRadius;
+                    ctx.lineTo(x, y);
+                    rot += step;
+
+                    x = cx + Math.cos(rot) * innerRadius;
+                    y = cy + Math.sin(rot) * innerRadius;
+                    ctx.lineTo(x, y);
+                    rot += step;
+                }
+                ctx.lineTo(cx, cy - outerRadius);
+                ctx.closePath();
+            }
+
+            function resizeCanvas() {
+                const size = canvas.clientWidth;
+                canvas.width = size;
+                canvas.height = size;
+                draw();
+            }
+
+            window.addEventListener('resize', resizeCanvas);
+
+            function initGame() {
+                score = 0;
+                maze = JSON.parse(JSON.stringify(initialMaze));
+                for (let y = 0; y < MAZE_HEIGHT; y++) {
+                    for (let x = 0; x < MAZE_WIDTH; x++) {
+                        if (maze[y][x] === 3) {
+                            player.x = x;
+                            player.y = y;
+                        }
+                    }
+                }
+                statusDisplay.textContent = '방향키 또는 화면 스와이프를 사용하여 시작!';
+                scoreDisplay.textContent = `SCORE: ${score}`;
+                resizeCanvas();
+            }
+
+            function movePlayer(dx, dy, newDir) {
+                const newX = player.x + dx;
+                const newY = player.y + dy;
+
+                if (maze[newY][newX] !== 0) { // If not a wall
+                    player.x = newX;
+                    player.y = newY;
+                    player.dir = newDir; // Update current direction on successful move
+                    
+                    // Check for dot
+                    if (maze[player.y][player.x] === 1) {
+                        maze[player.y][player.x] = 2; // Erase dot
+                        score += 10;
+                        scoreDisplay.textContent = `SCORE: ${score}`;
+                    }
+
+                    // Check for win condition
+                    const remainingDots = maze.flat().filter(tile => tile === 1).length;
+                    if (remainingDots === 0) {
+                        statusDisplay.textContent = 'LEVEL CLEAR! 축하합니다!';
+                        cancelAnimationFrame(animationFrameId);
+                    }
+                    return true;
+                }
+                return false;
+            }
+            
+            function attemptMove(dir) {
+                switch (dir) {
+                    case 'UP': return movePlayer(0, -1, 'UP');
+                    case 'DOWN': return movePlayer(0, 1, 'DOWN');
+                    case 'LEFT': return movePlayer(-1, 0, 'LEFT');
+                    case 'RIGHT': return movePlayer(1, 0, 'RIGHT');
+                }
+                return false;
+            }
+
+            function updateGame(timestamp) {
+                if (timestamp - lastMoveTime > MOVE_INTERVAL) {
+                    lastMoveTime = timestamp;
+
+                    // 1. Try to move in the 'nextDir'
+                    if (attemptMove(player.nextDir)) {
+                        // Success, player.dir is updated inside attemptMove
+                    } else {
+                        // 2. Fallback: Try to move in the current 'dir'
+                        attemptMove(player.dir);
+                    }
+
+                    // Player animation phase for mouth/star movement
+                    player.animationPhase = (player.animationPhase + 1) % 4; 
+                }
+            }
+
+            function draw() {
+                // Clear the canvas
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                SCALE_FACTOR = canvas.width / (MAZE_WIDTH * TILE_SIZE);
+                const scaledTileSize = TILE_SIZE * SCALE_FACTOR;
+
+                // Draw maze elements
+                for (let y = 0; y < MAZE_HEIGHT; y++) {
+                    for (let x = 0; x < MAZE_WIDTH; x++) {
+                        const drawX = x * scaledTileSize;
+                        const drawY = y * scaledTileSize;
+                        
+                        if (maze[y][x] === 0) { // Wall
+                            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--game-wall');
+                            ctx.fillRect(drawX, drawY, scaledTileSize, scaledTileSize);
+                            
+                            // Pixel details (optional)
+                            ctx.fillStyle = '#555555';
+                            ctx.fillRect(drawX, drawY, scaledTileSize * 0.1, scaledTileSize);
+                            ctx.fillRect(drawX, drawY, scaledTileSize, scaledTileSize * 0.1);
+
+                        } else if (maze[y][x] === 1) { // Dot (small star)
+                            ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--star-yellow');
+                            drawStar(ctx, drawX + scaledTileSize / 2, drawY + scaledTileSize / 2, 5, scaledTileSize * 0.15, scaledTileSize * 0.07, 0);
+                            ctx.fill();
+                        }
+                    }
+                }
+                
+                // Draw Player (Winged Star)
+                const playerCenter = scaledTileSize / 2;
+                const playerX = player.x * scaledTileSize + playerCenter;
+                const playerY = player.y * scaledTileSize + playerCenter;
+                const starSize = scaledTileSize * 0.4;
+                
+                // 1. Draw Wings (Simple Rectangles/Triangles for pixel feel)
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-y2k-pink');
+                
+                // Wing left
+                ctx.fillRect(playerX - starSize * 2, playerY - starSize * 0.3, starSize * 0.5, starSize * 0.6);
+                // Wing right
+                ctx.fillRect(playerX + starSize * 1.5, playerY - starSize * 0.3, starSize * 0.5, starSize * 0.6);
+                
+                // 2. Draw Star Body
+                ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--star-yellow');
+                ctx.shadowColor = '#FFEB3B';
+                ctx.shadowBlur = 10;
+                
+                let starRotation = 0;
+                // Add a slight rotation animation based on phase
+                if (player.animationPhase % 2 === 1) {
+                    starRotation = Math.PI / 16;
+                }
+
+                drawStar(ctx, playerX, playerY, 5, starSize, starSize * 0.4, starRotation);
+                ctx.fill();
+                
+                ctx.shadowBlur = 0; // Reset shadow
+
+                // 3. Draw Eye (Simple Black Dot)
+                ctx.fillStyle = '#000000';
+                ctx.beginPath();
+                // Eye position adjusted slightly based on direction
+                let eyeOffsetX = 0;
+                let eyeOffsetY = 0;
+                
+                if (player.dir === 'RIGHT') eyeOffsetX = starSize * 0.3;
+                if (player.dir === 'LEFT') eyeOffsetX = -starSize * 0.3;
+                if (player.dir === 'UP') eyeOffsetY = -starSize * 0.3;
+                if (player.dir === 'DOWN') eyeOffsetY = starSize * 0.3;
+                
+                ctx.arc(playerX + eyeOffsetX, playerY + eyeOffsetY, starSize * 0.1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            let animationFrameId;
+
+            function animate(timestamp) {
+                updateGame(timestamp);
+                draw();
+                animationFrameId = requestAnimationFrame(animate);
+            }
+            
+            // --- Event Handlers ---
+            
+            // Keyboard Controls
+            document.addEventListener('keydown', (e) => {
+                let newDir = player.nextDir;
+                switch (e.key) {
+                    case 'ArrowUp': newDir = 'UP'; break;
+                    case 'ArrowDown': newDir = 'DOWN'; break;
+                    case 'ArrowLeft': newDir = 'LEFT'; break;
+                    case 'ArrowRight': newDir = 'RIGHT'; break;
+                }
+                // Only set nextDir if it's a valid change
+                if (newDir !== player.nextDir) {
+                     player.nextDir = newDir;
+                     statusDisplay.textContent = '게임 플레이 중...';
+                }
+            });
+
+            // Touch Controls (Swipe)
+            canvas.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            });
+
+            canvas.addEventListener('touchend', (e) => {
+                if (e.changedTouches.length === 0) return;
+
+                const touchEndX = e.changedTouches[0].clientX;
+                const touchEndY = e.changedTouches[0].clientY;
+
+                const dx = touchEndX - touchStartX;
+                const dy = touchEndY - touchStartY;
+
+                if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > SWIPE_THRESHOLD) {
+                    // Horizontal swipe
+                    player.nextDir = dx > 0 ? 'RIGHT' : 'LEFT';
+                    statusDisplay.textContent = '게임 플레이 중...';
+                } else if (Math.abs(dy) > SWIPE_THRESHOLD) {
+                    // Vertical swipe
+                    player.nextDir = dy > 0 ? 'DOWN' : 'UP';
+                    statusDisplay.textContent = '게임 플레이 중...';
+                }
+            });
+            
+            // --- Fan Letter Toggle Logic ---
+            const fanletterSection = document.getElementById('fanletterSection');
+            
+            fanletterSection.addEventListener('click', () => {
+                fanletterSection.classList.toggle('open');
+            });
+
+
+            // Initial setup
+            initGame(); 
+            
+            // Start the game loop after a slight delay or on user action
+            // For now, start it immediately.
+            animationFrameId = requestAnimationFrame(animate);
+            
+        });
+    </script>
+</body>
+</html>
